@@ -561,7 +561,8 @@ def(type-trace-sig!, Type -- +IO,
         _ -> type-trace-stack!
     ))
 
-def(type-is-unit?, Type -- Type Bool, TYPE_UNIT eq? nip)
+def(type-is-unit?, Type -- Type Bool,
+    TYPE_UNIT eq? nip)
 
 def(type-trace-stack-dom!, Type -- +IO,
     type-expand type-is-unit? if(

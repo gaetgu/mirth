@@ -1470,7 +1470,7 @@ def(.block, Block -- +IO,
     "mb_" .
     block-arrow? arrow-token-start@
     is-nil? if(
-        drop cast .n,
+        drop Block->Int .n,
         token-module? module-name@ .name "_" .
         token-row? Row->Int .n "_" .
         token-col@ Col->Int .n

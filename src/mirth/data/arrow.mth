@@ -109,6 +109,9 @@ arrow-atom-add! = dip(arrow-atoms?) snoc over arrow-atoms!
 # BLOCK #
 #########
 
+Block->Int : Block -- Int
+Block->Int = cast
+
 block-new! : Arrow -- Block
 block-new! = (
     Block.alloc!
@@ -180,75 +183,6 @@ block-unify-type-aux! = (
     )
     type-unify!
 )
-
-# block-force-type! : Block Type --
-#     block-deferred? if(
-#         drop,
-#     )
-
-#     dip(block-token@)
-
-#     ab-build!(elab-atoms!)
-
-####################################
-# Helpers for constructing arrows. #
-####################################
-# TODO: Use an effect, or something, to elaborate these with types.
-
-atom-new-lambda! : Lambda -- Atom
-atom-new-lambda! = OP_LAMBDA Atom.alloc! tuck atom-op!
-
-atom-new-int! : Int -- Atom
-atom-new-int! = OP_INT Atom.alloc! tuck atom-op!
-
-atom-new-buffer! : Buffer -- Atom
-atom-new-buffer! = OP_BUFFER Atom.alloc! tuck atom-op!
-
-atom-new-external! : External -- Atom
-atom-new-external! = OP_EXTERNAL Atom.alloc! tuck atom-op!
-
-atom-new-prim! : Prim -- Atom
-atom-new-prim! = OP_PRIM Atom.alloc! tuck atom-op!
-
-atom-new-word! : Word -- Atom
-atom-new-word! = OP_WORD Atom.alloc! tuck atom-op!
-
-arrow-new-lambda! : Lambda -- Arrow
-arrow-new-lambda! = Arrow.alloc! swap arrow-push-lambda!
-
-arrow-new-int! : Int -- Arrow
-arrow-new-int! = Arrow.alloc! swap arrow-push-int!
-
-arrow-new-buffer! : Buffer -- Arrow
-arrow-new-buffer! = Arrow.alloc! swap arrow-push-buffer!
-
-arrow-new-external! : External -- Arrow
-arrow-new-external! = Arrow.alloc! swap arrow-push-external!
-
-arrow-new-prim! : Prim -- Arrow
-arrow-new-prim! = Arrow.alloc! swap arrow-push-prim!
-
-arrow-new-word! : Word -- Arrow
-arrow-new-word! = Arrow.alloc! swap arrow-push-word!
-
-arrow-push-lambda! : Arrow Lambda -- Arrow
-arrow-push-lambda! = atom-new-lambda! arrow-atom-add!
-
-arrow-push-int! : Arrow Int -- Arrow
-arrow-push-int! = atom-new-int! arrow-atom-add!
-
-arrow-push-buffer! : Arrow Buffer -- Arrow
-arrow-push-buffer! = atom-new-buffer! arrow-atom-add!
-
-arrow-push-external! : Arrow External -- Arrow
-arrow-push-external! = atom-new-external! arrow-atom-add!
-
-arrow-push-prim! : Arrow Prim -- Arrow
-arrow-push-prim! = atom-new-prim! arrow-atom-add!
-
-arrow-push-word! : Arrow Word -- Arrow
-arrow-push-word! = atom-new-word! arrow-atom-add!
-
 
 #########
 # MATCH #
