@@ -665,8 +665,14 @@ def(elab-expand-tensor!, Type Token -- Type Type Token,
         TYPE_ERROR -> dip(TYPE_ERROR TYPE_ERROR),
         TTensor -> id rotl,
         TMeta ->
-            dip(meta-alloc! TMeta
-                meta-alloc! TMeta
+            meta-modality? swap
+            dip(meta-alloc!
+                dup2 meta-modality!
+                "*x" name-new! over meta-name!
+                TMeta swap
+                meta-alloc!
+                tuck meta-modality!
+                TMeta
                 dup2 TTensor)
             meta-type! rotl,
         _ ->
@@ -679,8 +685,8 @@ def(elab-expand-morphism!, Type Token -- Type Type Token,
         TYPE_ERROR -> dip(TYPE_ERROR TYPE_ERROR),
         TMorphism -> id rotl,
         TMeta ->
-            dip(meta-alloc! TMeta
-                meta-alloc! TMeta
+            dip(meta-alloc! "*x" name-new! over meta-name! TMeta
+                meta-alloc! "*x" name-new! over meta-name! TMeta
                 dup2 TMorphism)
             meta-type! rotl,
         _ ->

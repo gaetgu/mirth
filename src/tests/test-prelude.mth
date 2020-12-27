@@ -6,7 +6,7 @@ import(platform.posix)
 
 def(!!true, Bool --, if(id, "Assertion failed" panic!))
 def(!!false, Bool --, not !!true)
-def(!!=, a a --, == !!true)
+def(!!=, !a !a --, == !!true)
 def(!!0, Int --, 0 !!=)
 def(!!1, Int --, 1 !!=)
 def(!!001, Int Int Int --, 1 !!= 0 !!= 0 !!=)

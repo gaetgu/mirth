@@ -607,17 +607,15 @@ def(type-trace!, Type -- +IO,
 def(meta-trace!, MetaVar -- +IO,
     meta-name? is-nil? if(
         drop meta-modality? match(
-            NONE -> "%" str-trace!,
+            NONE -> "x" str-trace!,
             SOME -> match(
-                MOD_BANG -> "!" str-trace!,
-                MOD_WHY -> "?" str-trace!
+                MOD_BANG -> "!x" str-trace!,
+                MOD_WHY -> "?x" str-trace!
             )
         ),
         name-trace!
     )
-     "{" str-trace!
-    MetaVar->Int int-trace!
-    "}" str-trace!)
+    MetaVar->Int int-trace!)
 
 def(value-trace!, Value -- +IO,
     match(
@@ -657,7 +655,7 @@ def(type-semifreshen-sig, Type -- Type,
 def(type-semifreshen-sig-aux, Type -- Type,
     type-expand match(
         TMorphism ->
-            meta-alloc! TMeta rotr
+            meta-alloc! "*x" name-new! over meta-name! TMeta rotr
             dip(type-semifreshen-sig-stack) swap
             dip(type-semifreshen-sig-stack) swap
             TMorphism nip,
@@ -703,7 +701,7 @@ def(type-sig-needs-fresh-stack-rest?, Type -- Type Bool,
 def(type-freshen-sig-aux, Subst Type -- Subst Type,
     type-expand match(
         TMorphism ->
-            meta-alloc! TMeta rot4r
+            meta-alloc! "*x" name-new! over meta-name! TMeta rot4r
             dip(type-freshen-sig-stack) swap
             dip(type-freshen-sig-stack) swap
             TMorphism dip(nip),

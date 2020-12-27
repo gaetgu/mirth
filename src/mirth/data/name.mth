@@ -129,10 +129,11 @@ def(name-tail, Name -- Name,
     name-str@ str-tail name-new!)
 
 def(name-is-type-hole, Name -- Bool,
-    name-str@ dup str-head is-question-mark? nip if(
+    name-str@ dup str-head is-underscore? nip if(
         str-tail str-is-empty? if(
-            drop true,
-            str-could-be-type-var),
+            drop false,
+            str-head-is-lower? nip
+        ),
         drop false
     ))
 

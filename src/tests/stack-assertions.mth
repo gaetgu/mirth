@@ -4,23 +4,23 @@ import(prelude)
 def(ok-1, Int Str -- Str Int Str,
     {Int Str} swap {Str Int} swap {Int Str} tuck {Str Int Str})
 
-def(ok-2, a b -- b a b,
-    {a b} swap {b a} swap {a b} tuck {b a b})
+def(ok-2, a !b -- !b a !b,
+    {a !b} swap {!b a} swap {a !b} tuck {!b a !b})
 
-def(ok-3, a b -- b a b,
-    {a _} swap {_ a} swap {_ b} tuck {b _ b})
+def(ok-3, a !b -- !b a !b,
+    {a _} swap {_ a} swap {_ !b} tuck {!b _ !b})
 
-def(ok-4, a b -- b a b,
-    {a ?myb} swap {? a} swap {?foo b} tuck {b ?bar b})
+def(ok-4, a !b -- !b a !b,
+    {a _myb} swap {_ a} swap {_foo !b} tuck {!b _bar !b})
 
 def(bad-1, Int Str -- Str Int Str,
     {Int Str} swap {Int Int} swap {Int Str} tuck {Str Str Str})
 
-def(bad-2, a b -- b a b,
-    {a b} swap {a a} swap {a b} tuck {b b b})
+def(bad-2, a !b -- !b a !b,
+    {a !b} swap {a a} swap {a !b} tuck {!b !b !b})
 
-def(bad-3, a b -- b a b,
-    {a _} swap {a a} swap {_ _} tuck {b b b})
+def(bad-3, a !b -- !b a !b,
+    {a _} swap {a a} swap {_ _} tuck {!b !b !b})
 
 def(non-exhaustive, a b c d -- a b c d,
     {a b c d}
@@ -36,10 +36,10 @@ def(non-exhaustive-reverse, a b c d -- a b c d,
 
 # mirth-test # merr # 17:20: error: Failed to unify Str with Int
 # mirth-test # merr # 17:50: error: Failed to unify Int with Str
-# mirth-test # merr # 20:16: error: Failed to unify b with a
-# mirth-test # merr # 20:38: error: Failed to unify a with b
-# mirth-test # merr # 23:16: error: Failed to unify b with a
-# mirth-test # merr # 23:38: error: Failed to unify a with b
+# mirth-test # merr # 20:17: error: Failed to unify !b with a
+# mirth-test # merr # 20:40: error: Failed to unify a with !b
+# mirth-test # merr # 23:16: error: Failed to unify !b with a
+# mirth-test # merr # 23:38: error: Failed to unify a with !b
 # mirth-test # merr # 27:5: error: Failed to unify [a] with []
 # mirth-test # merr # 28:5: error: Failed to unify [a b] with []
 # mirth-test # merr # 29:5: error: Failed to unify [a b c] with []

@@ -34,7 +34,7 @@ list10 : List(Int)
 list10 = list2 list3 list2 list3 list2 list3 list2 list3 list3 list2 list3 list2 list3 list2 list3 list3 list2 list3 list2 list3 list2 list3 list3 list2 list3 list2 list3 list2 list3 list3 list2 list3 list2 list3 list2 list3 list3 list2 list3 list2 list3 list2 list3 list3 list2 list3 list2 list3 list2 list3 list3 list2 list3 list2 list3 list2 list3 cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat
 
 ||| Show the structure of the list.
-trace-list-struc! : List(t) -- +IO
+trace-list-struc! : List(!t) -- +IO
 trace-list-struc! =
     match(
         L0 -> "L0" str-trace!,
