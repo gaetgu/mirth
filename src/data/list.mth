@@ -90,30 +90,30 @@ List->List+ =
         LCAT -> LCAT+ SOME
     )
 
-len : List(t) -- Int
-len =
-    match(
-        L0 -> 0,
-        L1 -> drop 1,
-        L2 -> drop2 2,
-        L3 -> drop3 3,
-        LCAT -> dip(drop2)
-    )
+len : List(!t) -- Int
+len = len? nip
 
-len+ : List+(t) -- Int
-len+ =
-    match(
-        L1+ -> drop 1,
-        L2+ -> drop2 2,
-        L3+ -> drop3 3,
-        LCAT+ -> dip(drop2)
-    )
+len+ : List+(!t) -- Int
+len+ = len+? nip
 
 len? : List(t) -- List(t) Int
-len? = dup len
+len? =
+    match(
+        L0 -> L0 0,
+        L1 -> L1 1,
+        L2 -> L2 2,
+        L3 -> L3 3,
+        LCAT -> dup dip(LCAT)
+    )
 
 len+? : List+(t) -- List+(t) Int
-len+? = dup len+
+len+? =
+    match(
+        L1+ -> L1+ 1,
+        L2+ -> L2+ 2,
+        L3+ -> L3+ 3,
+        LCAT+ -> dup dip(LCAT+)
+    )
 
 cons+ : t List(t) -- List+(t)
 cons+ =
@@ -215,12 +215,16 @@ cat+ =
             )
     )
 
+||| Get both lengths.
+len++? : List+(t) List+(t) -- List+(t) List+(t) Int Int
+len++? = dip(len+?) swap dip(len+?) swap
+
 cat-aux : List+(t) List+(t) -- List+(t)
-cat-aux = rebalance+ dup2 dip(len+) len+ + LCAT+
+cat-aux = rebalance+ len++? + LCAT+
 
 rebalance+ : List+(t) List+(t) -- List+(t) List+(t)
 rebalance+ =
-    dup2 dip(len+) len+ dup2 3 * > if(
+    len++? dup2 3 * > if(
         drop2 dip(split-half-left) cat_+ rebalance+,
         dip(3 *) < if(
             split-half-right dip(cat+_) rebalance+,
@@ -257,16 +261,16 @@ split-half =
     )
 
 
-first : List(t) -- Maybe(t)
+first : List(!t) -- Maybe(!t)
 first = List->List+ maybe-map(first+)
 
-last : List(t) -- Maybe(t)
+last : List(!t) -- Maybe(!t)
 last = List->List+ maybe-map(last+)
 
-middle : List(t) -- Maybe(t)
+middle : List(!t) -- Maybe(!t)
 middle = List->List+ maybe-map(middle+)
 
-first+ : List+(t) -- t
+first+ : List+(!t) -- !t
 first+ =
     match(
         L1+ -> id,
@@ -275,7 +279,7 @@ first+ =
         LCAT+ -> drop2 first+
     )
 
-last+ : List+(t) -- t
+last+ : List+(!t) -- !t
 last+ =
     match(
         L1+ -> id,
@@ -284,7 +288,7 @@ last+ =
         LCAT+ -> drop nip last+
     )
 
-middle+ : List+(t) -- t
+middle+ : List+(!t) -- !t
 middle+ =
     match(
         L1+ -> id,
@@ -407,7 +411,7 @@ map-reduce+ : List+(a) [b b -- b] [a -- b] -- b
 map-reduce+ = \([g] [f] -> map+(f) reduce+(g))
 
 ||| Filter away any list elements that don't satisfy the predicate.
-filter : *c List(a) [*c a -- *c a Bool] -- *c List(a)
+filter : *c List(!a) [*c !a -- *c !a Bool] -- *c List(!a)
 filter = \([f] ->
     List->List+ match(
         NONE -> L0,
@@ -416,7 +420,7 @@ filter = \([f] ->
 )
 
 ||| Filter away any list elements that don't satisfy the predicate.
-filter+ : *c List+(a) [*c a -- *c a Bool] -- *c List(a)
+filter+ : *c List+(!a) [*c !a -- *c !a Bool] -- *c List(!a)
 filter+ = \([f] ->
     match(
         LCAT+ -> drop dip(filter+(f)) dip'(filter+(f)) cat,
@@ -429,7 +433,7 @@ filter+ = \([f] ->
 )
 
 ||| Find the first element that satisfies the predicate, if it exists.
-find : *c List(a) [*c a -- *c a Bool] -- *c Maybe(a)
+find : *c List(!a) [*c !a -- *c !a Bool] -- *c Maybe(!a)
 find = \([f] ->
     List->List+ match(
         NONE -> NONE,
@@ -438,7 +442,7 @@ find = \([f] ->
 )
 
 ||| Find the first element that satisfies the predicate, if it exists.
-find+ : *c List+(a) [*c a -- *c a Bool] -- *c Maybe(a)
+find+ : *c List+(!a) [*c !a -- *c !a Bool] -- *c Maybe(!a)
 find+ = \([f] ->
     match(
         LCAT+ ->
@@ -457,29 +461,29 @@ find+ = \([f] ->
 )
 
 ||| Like `find` but preserves the list.
-find? : *c List(a) [*c a -- *c a Bool] -- *c List(a) Maybe(a)
+find? : *c List(!a) [*c !a -- *c !a Bool] -- *c List(!a) Maybe(!a)
 find? = \([f] -> dup dip(find(f)) swap)
 
 ||| Like `find` but goes backward through the list.
-reverse-find : *c List(a) [*c a -- *c a Bool] -- *c Maybe(a)
+reverse-find : *c List(!a) [*c !a -- *c !a Bool] -- *c Maybe(!a)
 reverse-find = \([f] -> reverse find(f))  # TODO: implement directly?
 
 ||| Like `find?` but goes backward through the list.
-reverse-find? : *c List(a) [*c a -- *c a Bool] -- *c List(a) Maybe(a)
+reverse-find? : *c List(!a) [*c !a -- *c !a Bool] -- *c List(!a) Maybe(!a)
 reverse-find? = \([f] -> dup dip(reverse find(f)) swap)
 
 ||| Is the predicate true for any element of the list?
-any : *c List(a) [*c a -- *c a Bool] -- *c Bool
+any : *c List(!a) [*c !a -- *c !a Bool] -- *c Bool
 any = \([f] -> find(f) is-some)
 
 ||| Is the predicate true for any element of the list?
-any? : *c List(a) [*c a -- *c a Bool] -- *c List(a) Bool
+any? : *c List(!a) [*c !a -- *c !a Bool] -- *c List(!a) Bool
 any? = \([f] -> find?(f) is-some)
 
 ||| Is the predicate true for all elements of the list?
-all : *c List(a) [*c a -- *c a Bool] -- *c Bool
+all : *c List(!a) [*c !a -- *c !a Bool] -- *c Bool
 all = \([f] -> find(f not) is-none)
 
 ||| Is the predicate true for all elements of the list?
-all? : *c List(a) [*c a -- *c a Bool] -- *c List(a) Bool
+all? : *c List(!a) [*c !a -- *c !a Bool] -- *c List(!a) Bool
 all? = \([f] -> find?(f not) is-none)

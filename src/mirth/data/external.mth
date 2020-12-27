@@ -9,3 +9,15 @@ field(external-type, External, Type)
 field(external-sig, External, Token)
 field(external-sig-is-checked, External, Bool)
 field(external-ctx, External, Ctx)
+
+table(ImportStruct)
+table(ImportStructField)
+
+field(import-struct-token, ImportStruct, Token)
+field(import-struct-type, ImportStruct, Type)
+field(import-struct-header, ImportStruct, List(Str))
+field(import-struct-symbol, ImportStruct, Str)
+field(import-struct-size, ImportStruct, Size)
+field(import-struct-fields, ImportStruct, List(ImportStructField))
+
+field(import-struct-field-type, ImportStructField, Type)

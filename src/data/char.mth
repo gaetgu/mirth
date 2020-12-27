@@ -12,6 +12,7 @@ def(is-vtab?, Char -- Char Bool, dup Char->Int 11 ==)
 def(is-return?, Char -- Char Bool, dup Char->Int 13 ==)
 def(is-space?, Char -- Char Bool, dup Char->Int 32 ==)
 
+def(is-exclamation-mark?, Char -- Char Bool, dup Char->Int 33 ==)
 def(is-quote?, Char -- Char Bool, dup Char->Int 34 ==)
 def(is-pound?, Char -- Char Bool, dup Char->Int 35 ==)
 def(is-lparen?, Char -- Char Bool, dup Char->Int 40 ==)
@@ -75,6 +76,9 @@ is-string-end? = (
 
 underscore : Char
 underscore = 95 Int->Char
+
+is-modality? : Char -- Char Bool
+is-modality? = is-question-mark? or(is-exclamation-mark?)
 
 is-visible? : Char -- Char Bool
 is-visible? = dup Char->Int 33 126 in-range

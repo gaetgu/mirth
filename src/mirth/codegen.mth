@@ -1327,7 +1327,7 @@ def(need-pop!, -- Maybe(Need),
         SOME -> uncons C99_NEED_STACK value! SOME
     ))
 def(has-need?, Bool,
-    C99_NEED_STACK value@ is-nil not)
+    C99_NEED_STACK value@ { List(Need) } is-nil not)
 
 field(c99-word-needed, Word, Bool)
 def(need-word!, Word -- Word,

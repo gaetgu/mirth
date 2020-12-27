@@ -69,16 +69,64 @@ name-print! : Name -- +IO
 name-print! = name-str@ str-print!
 
 def(name-could-be-type, Name -- Bool,
-    name-str@ str-head is-alpha? nip)
+    dup name-could-be-type-var or(dup name-could-be-type-con) nip)
 
 def(name-could-be-type-var, Name -- Bool,
     name-str@ str-could-be-type-var)
 
+str-head-is-lower? : Str -- Str Bool
+str-head-is-lower? = dup str-head is-lower? nip
+
+str-head-is-upper? : Str -- Str Bool
+str-head-is-upper? = dup str-head is-upper? nip
+
+str-head-is-modality? : Str -- Str Bool
+str-head-is-modality? = dup str-head is-modality? nip
+
+name-has-!-modality? : Name -- Name Bool
+name-has-!-modality? = (
+    name-str?
+    dup str-head is-asterisk? nip if(str-tail, id)
+    str-head is-exclamation-mark? nip
+)
+
+name-has-?-modality? : Name -- Name Bool
+name-has-?-modality? = (
+    name-str?
+    dup str-head is-asterisk? nip if(str-tail, id)
+    str-head is-question-mark? nip
+)
+
 def(str-could-be-type-var, Str -- Bool,
-    str-head is-lower? nip)
+    str-head-is-modality? if(str-tail, id)
+    str-head-is-lower? nip)
 
 def(name-could-be-type-con, Name -- Bool,
-    name-str@ str-head is-upper? nip)
+    name-str@
+    str-head-is-modality? if(str-tail, id)
+    str-head-is-upper? nip)
+
+data Modality
+    MOD_BANG
+    MOD_WHY
+end
+
+def(name-modality, Name -- Maybe(Modality),
+    name-modality? nip)
+
+def(name-modality?, Name -- Name Maybe(Modality),
+    name-has-!-modality? if(
+        MOD_BANG SOME,
+    name-has-?-modality? if(
+        MOD_WHY SOME,
+        NONE
+    )))
+
+def(name-strip-modality, Name -- Name Maybe(Modality),
+    name-modality? maybe-map(dip(name-tail)))
+
+def(name-tail, Name -- Name,
+    name-str@ str-tail name-new!)
 
 def(name-is-type-hole, Name -- Bool,
     name-str@ dup str-head is-question-mark? nip if(

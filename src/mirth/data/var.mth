@@ -27,3 +27,9 @@ def(var-is-physical?, Var -- Var Bool,
     dip(var-type? PRIM_TYPE_TYPE TPrim !=) &&
     dip(var-type? PRIM_TYPE_STACK TPrim !=) &&
     dip(var-type? PRIM_TYPE_EFFECT TPrim !=) &&)
+
+def(var-modality@, Var -- Maybe(Modality),
+    var-name@ name-modality)
+
+def(var-modality?, Var -- Var Maybe(Modality),
+    var-name? name-modality)

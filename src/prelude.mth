@@ -17,18 +17,24 @@ module(prelude)
 
 # Re-exported primitives.
 def(id, --, prim.core.id)
-def(dup, a -- a a, prim.core.dup)
-def(drop, a --, prim.core.drop)
+def(dup, !a -- !a !a, prim.core.dup)
+def(drop, !a --, prim.core.drop)
 def(swap, a b -- b a, prim.core.swap)
 def(??, --, prim.core.debug)
 def(run, *a [ *a -- *b ] -- *b, \([f] -> f))
 
-def(==, a a -- Bool, prim.value.eq)
-def(<=, a a -- Bool, prim.value.le)
-def(<,  a a -- Bool, prim.value.lt)
+def(==, !a !a -- Bool, prim.value.eq)
+def(<=, !a !a -- Bool, prim.value.le)
+def(<, !a !a -- Bool, prim.value.lt)
+def(==?, a a -- a a Bool, dip(cast) cast dup2 prim.value.eq dip(cast) cast)
+def(<=?, a a -- a a Bool, dip(cast) cast dup2 prim.value.le dip(cast) cast)
+def(<?, a a -- a a Bool, dip(cast) cast dup2 prim.value.lt dip(cast) cast)
+def(eq?, a a -- a a Bool, dip(cast) cast dup2 prim.value.eq dip(cast) cast)
+def(le?, a a -- a a Bool, dip(cast) cast dup2 prim.value.le dip(cast) cast)
+def(lt?, a a -- a a Bool, dip(cast) cast dup2 prim.value.lt dip(cast) cast)
 def(cast, a -- b, prim.value.cast)
-def(value@, Ptr -- a, prim.value.get)
-def(value!, a Ptr --, prim.value.set)
+def(value@, Ptr -- !a, prim.value.get)
+def(value!, !a Ptr --, prim.value.set)
 
 def(+, Int Int -- Int, prim.int.add)
 def(-, Int Int -- Int, prim.int.sub)
@@ -92,28 +98,32 @@ def(posix-close!, Int -- Int, prim.posix.close)
 def(posix-exit!, *a Int -- *b, prim.posix.exit)
 def(posix-mmap!, Ptr Int Int Int Int Int -- Ptr, prim.posix.mmap)
 
+###############
+# STACK WORDS #
+###############
+
 rotr : a b c -- c a b
 rotr = swap dip(swap)
 
 rotl : a b c -- b c a
 rotl = dip(swap) swap
 
-over : a b -- a b a
+over : !a b -- !a b !a
 over = dip(dup) swap
 
-tuck : a b -- b a b
+tuck : a !b -- !b a !b
 tuck = dup dip(swap)
 
-nip : a b -- b
+nip : !a b -- b
 nip = dip(drop)
 
-trip : a -- a a a
+trip : !a -- !a !a !a
 trip = dup dup
 
-dup2 : a1 a2 -- a1 a2 a1 a2
+dup2 : !a1 !a2 -- !a1 !a2 !a1 !a2
 dup2 = over over
 
-dup3 : a1 a2 a3 -- a1 a2 a3 a1 a2 a3
+dup3 : !a1 !a2 !a3 -- !a1 !a2 !a3 !a1 !a2 !a3
 dup3 = dup dip(dip(dup2) rotr)
 
 dip? : *a c [*a -- *a Bool] -- *a c Bool
@@ -128,13 +138,13 @@ dip2 = \([f] -> dip(dip(f)))
 dip3 : *a c1 c2 c3 [*a -- *b] -- *b c1 c2 c3
 dip3 = \([f] -> dip(dip(dip(f))))
 
-drop2 : a b --
+drop2 : !a !b --
 drop2 = drop drop
 
-drop3 : a b c --
+drop3 : !a !b !c --
 drop3 = drop drop drop
 
-drop4 : a b c d --
+drop4 : !a !b !c !d --
 drop4 = drop drop drop drop
 
 rot4r : x1 x2 x3 y -- y x1 x2 x3
@@ -142,6 +152,37 @@ rot4r = swap dip(rotr)
 
 rot4l : y x1 x2 x3 -- x1 x2 x3 y
 rot4l = dip(rotl) swap
+
+over0 : !a -- !a !a
+over1 : !a b1 -- !a b1 !a
+over2 : !a b1 b2 -- !a b1 b2 !a
+over3 : !a b1 b2 b3 -- !a b1 b2 b3 !a
+over4 : !a b1 b2 b3 b4 -- !a b1 b2 b3 b4 !a
+over5 : !a b1 b2 b3 b4 b5 -- !a b1 b2 b3 b4 b5 !a
+
+over0 = dup
+over1 = dip(over0) swap
+over2 = dip(over1) swap
+over3 = dip(over2) swap
+over4 = dip(over3) swap
+over5 = dip(over4) swap
+
+nip0 : !a --
+nip1 : !a b1 -- b1
+nip2 : !a b1 b2 -- b1 b2
+nip3 : !a b1 b2 b3 -- b1 b2 b3
+nip4 : !a b1 b2 b3 b4 -- b1 b2 b3 b4
+nip5 : !a b1 b2 b3 b4 b5 -- b1 b2 b3 b4 b5
+
+nip0 = drop
+nip1 = dip(nip0)
+nip2 = dip(nip1)
+nip3 = dip(nip2)
+nip4 = dip(nip3)
+nip5 = dip(nip4)
+
+
+
 
 or : *a Bool [*a -- *a Bool] -- *a Bool
 or = \([f] -> if(true, f))
@@ -207,7 +248,7 @@ I32_MIN = -0x80000000
 not : Bool -- Bool
 not = false ==
 
-!= : a a -- Bool
+!= : !a !a -- Bool
 != = == not
 
 data Comparison
@@ -216,24 +257,23 @@ data Comparison
     GT
 end
 
-cmp : a a -- Comparison
-cmp =
-    dup2 == if(
-        drop2 EQ,
-        < if(
-            LT,
-            GT
-        )
-    )
+cmp : !a !a -- Comparison
+cmp = cmp? dip(drop2)
 
 cmp? : a a -- a a Comparison
-cmp? = dup2 cmp
+cmp? = eq? if(EQ, lt? if(LT, GT))
 
-> : a a -- Bool
+> : !a !a -- Bool
 > = swap <
 
->= : a a -- Bool
+>= : !a !a -- Bool
 >= = swap <=
+
+>? : a a -- a a Bool
+>? = swap <? dip(swap)
+
+>=? : a a -- a a Bool
+>=? = swap <=? dip(swap)
 
 0= : Int -- Bool
 0= = 0 ==
@@ -286,10 +326,10 @@ int!! = dip(ints) ptr+ int!
 values : Size -- Size
 values = 16 *
 
-value@@ : Offset Ptr -- a
+value@@ : Offset Ptr -- !a
 value@@ = dip(values) ptr+ value@
 
-value!! : a Offset Ptr --
+value!! : !a Offset Ptr --
 value!! = dip(values) ptr+ value!
 
 in-range : Int Int Int -- Bool
@@ -402,28 +442,24 @@ abs = dup 0< if(negate, id)
 |||   Its fields have nil value unless you override them.
 ||| - For data types, this is the first constructor, applied to nil values.
 ||| - For n-tuples, this is [ nil ... nil ]
-nil : a
+nil : ?a
 nil = 0 cast
 
-||| Test for nil.
-is-nil : a -- Bool
-is-nil = nil ==
+||| Test for nil. (THIS SHOULD REALLY HAVE TYPE ?!a -- Bool)
+is-nil : !a -- Bool
+is-nil = cast 0 ==
 
 ||| Test for nil.
-is-nil? : a -- a Bool
-is-nil? = dup nil ==
+is-nil? : ?a -- ?a Bool
+is-nil? = nil ==? dip(cast drop)
 
 ##########
 # TUPLES #
 ##########
 
 ||| Return the "nil" pack, i.e. null.
-pack-nil : [*a]
+pack-nil : []
 pack-nil = nil
-
-||| Is this a nil pack?
-pack-nil? : [*a] -- [*a] Bool
-pack-nil? = dup pack-nil ==
 
 ||| Construct a tuple by appending an element.
 pack-cons : [*a] b -- [*a b]
@@ -469,56 +505,56 @@ unpack4 = pack-uncons dip(unpack3)
 unpack5 : [a b c d e] -- a b c d e
 unpack5 = pack-uncons dip(unpack4)
 
-.0 : [*a b] -- b
+.0 : [*!a b] -- b
 .0 = pack-uncons nip
 
-.1 : [*a b c] -- b
+.1 : [*!a b !c] -- b
 .1 = pack-uncons drop .0
 
-.2 : [*a b c d] -- b
+.2 : [*!a b !c !d] -- b
 .2 = pack-uncons drop .1
 
-.3 : [*a b c d e] -- b
+.3 : [*!a b !c !d !e] -- b
 .3 = pack-uncons drop .2
 
-.4 : [*a b c d e f] -- b
+.4 : [*!a b !c !d !e !f] -- b
 .4 = pack-uncons drop .3
 
-.5 : [*a b c d e f g] -- b
+.5 : [*!a b !c !d !e !f !g] -- b
 .5 = pack-uncons drop .4
 
-.0? : [*a b] -- [*a b] b
+.0? : [*!a !b] -- [*!a !b] !b
 .0? = dup .0
 
-.1? : [*a b c] -- [*a b c] b
+.1? : [*!a !b !c] -- [*!a !b !c] !b
 .1? = dup .1
 
-.2? : [*a b c d] -- [*a b c d] b
+.2? : [*!a !b !c !d] -- [*!a !b !c !d] !b
 .2? = dup .2
 
-.3? : [*a b c d e] -- [*a b c d e] b
+.3? : [*!a !b !c !d !e] -- [*!a !b !c !d !e] !b
 .3? = dup .3
 
-.4? : [*a b c d e f] -- [*a b c d e f] b
+.4? : [*!a !b !c !d !e !f] -- [*!a !b !c !d !e !f] !b
 .4? = dup .4
 
-.5? : [*a b c d e f g] -- [*a b c d e f g] b
+.5? : [*!a !b !c !d !e !f !g] -- [*!a !b !c !d !e !f !g] !b
 .5? = dup .5
 
-.0! : y [*a x] -- [*a y]
+.0! : y [*a !x] -- [*a y]
 .0! = pack-uncons drop swap pack-cons
 
-.1! : y [*a x b] -- [*a y b]
+.1! : y [*a !x b] -- [*a y b]
 .1! = pack-uncons dip(.0!) pack-cons
 
-.2! : y [*a x b c] -- [*a y b c]
+.2! : y [*a !x b c] -- [*a y b c]
 .2! = pack-uncons dip(.1!) pack-cons
 
-.3! : y [*a x b c d] -- [*a y b c d]
+.3! : y [*a !x b c d] -- [*a y b c d]
 .3! = pack-uncons dip(.2!) pack-cons
 
-.4! : y [*a x b c d e] -- [*a y b c d e]
+.4! : y [*a !x b c d e] -- [*a y b c d e]
 .4! = pack-uncons dip(.3!) pack-cons
 
-.5! : y [*a x b c d e f] -- [*a y b c d e f]
+.5! : y [*a !x b c d e f] -- [*a y b c d e f]
 .5! = pack-uncons dip(.4!) pack-cons

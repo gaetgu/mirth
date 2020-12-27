@@ -90,6 +90,9 @@ data Prim
 
     PRIM_SYNTAX_MODULE
     PRIM_SYNTAX_IMPORT
+    PRIM_SYNTAX_IMPORT_TYPE
+    PRIM_SYNTAX_IMPORT_STRUCT
+    PRIM_SYNTAX_IMPORT_WORD
     PRIM_SYNTAX_DEF
     PRIM_SYNTAX_DEF_TYPE
     PRIM_SYNTAX_BUFFER
@@ -136,6 +139,9 @@ def(init-prims!, +Names,
 
     PRIM_SYNTAX_MODULE "module" def-prim!
     PRIM_SYNTAX_IMPORT "import" def-prim!
+    PRIM_SYNTAX_IMPORT_STRUCT "import-struct" def-prim!
+    PRIM_SYNTAX_IMPORT_TYPE "import-type" def-prim!
+    PRIM_SYNTAX_IMPORT_WORD "import-word" def-prim!
     PRIM_SYNTAX_DEF "def" def-prim!
     PRIM_SYNTAX_DEF_TYPE "def-type" def-prim!
     PRIM_SYNTAX_BUFFER "buffer" def-prim!
@@ -360,20 +366,21 @@ def(init-prims!, +Names,
     # polymorphic prims -- we really need better technology to notate these
     #
 
-    "a" name-new! var-new-implicit! TYPE_TYPE over var-type!
+    "!a" name-new! var-new-implicit! TYPE_TYPE over var-type!
     dup ctx-empty swap ctx-new!
     PRIM_CORE_DROP prim-ctx!
 
     TVar T1 T0 T->
     PRIM_CORE_DROP prim-type!
 
-    "a" name-new! var-new-implicit! TYPE_TYPE over var-type!
+    "!a" name-new! var-new-implicit! TYPE_TYPE over var-type!
     dup ctx-empty swap ctx-new!
     PRIM_CORE_DUP prim-ctx!
 
     TVar dup T1 dup rotl T* T->
     PRIM_CORE_DUP prim-type!
 
+    # TODO: change primitive comparison operator types to preserve values on stack
     "a" name-new! var-new-implicit! TYPE_TYPE over var-type!
     dup ctx-empty swap ctx-new!
 
@@ -473,7 +480,7 @@ def(init-prims!, +Names,
     dup2 T* T1 rotr T2 T->
     PRIM_PACK_UNCONS prim-type!
 
-    "a" name-new! var-new-implicit! TYPE_TYPE over var-type!
+    "!a" name-new! var-new-implicit! TYPE_TYPE over var-type!
     dup ctx-empty swap ctx-new!
     PRIM_VALUE_GET prim-ctx!
 
@@ -481,7 +488,7 @@ def(init-prims!, +Names,
     dip(TYPE_PTR T1) T1 T->
     PRIM_VALUE_GET prim-type!
 
-    "a" name-new! var-new-implicit! TYPE_TYPE over var-type!
+    "!a" name-new! var-new-implicit! TYPE_TYPE over var-type!
     dup ctx-empty swap ctx-new!
     PRIM_VALUE_SET prim-ctx!
 

@@ -52,6 +52,8 @@ data(Ctx, CTX -> List(Var))
 
 field(meta-is-defined, MetaVar, Bool)
 field(meta-type-raw, MetaVar, Type)
+field(meta-name, MetaVar, Name)
+field(meta-modality, MetaVar, Maybe(Modality))
 
 field(data-header, Data, Token)
 field(data-name, Data, Name)
@@ -71,19 +73,97 @@ field(tag-type-raw, Tag, Type)
 def(def-type!, Type Str --, name-new! name-type!)
 
 def(init-types!, --,
+
+    ##################
+    # ABSTRACT TYPES #
+    ##################
+
     TYPE_INT "Int" def-type!
     TYPE_PTR "Ptr" def-type!
     TYPE_STR "Str" def-type!
     TYPE_CHAR "Char" def-type!
+    TYPE_BOOL "Bool" def-type!
+
+    ##################
+    # CONCRETE TYPES #
+    ##################
+
+    # TYPE_U0 "U0" def-type!            # TODO
+    # TYPE_U1 "U1" def-type!            # TODO
+    # TYPE_U2 "U2" def-type!            # TODO
+    # TYPE_U3 "U3" def-type!            # TODO
+    # TYPE_U4 "U4" def-type!            # TODO
+    # TYPE_U5 "U5" def-type!            # TODO
+    # TYPE_U6 "U6" def-type!            # TODO
+    # TYPE_U7 "U7" def-type!            # TODO
     TYPE_U8 "U8" def-type!
     TYPE_U16 "U16" def-type!
     TYPE_U32 "U32" def-type!
     TYPE_U64 "U64" def-type!
+    # TYPE_U128 "U128" def-type!        # TODO?
+    # TYPE_U256 "U256" def-type!        # TODO?
+    # TYPE_U512 "U512" def-type!        # TODO?
+
+    # TYPE_I1 "I1" def-type!            # TODO?
+    # TYPE_I2 "I2" def-type!            # TODO?
+    # TYPE_I3 "I3" def-type!            # TODO?
+    # TYPE_I4 "I4" def-type!            # TODO?
+    # TYPE_I5 "I5" def-type!            # TODO?
+    # TYPE_I6 "I6" def-type!            # TODO?
+    # TYPE_I7 "I7" def-type!            # TODO?
     TYPE_I8 "I8" def-type!
     TYPE_I16 "I16" def-type!
     TYPE_I32 "I32" def-type!
     TYPE_I64 "I64" def-type!
-    TYPE_BOOL "Bool" def-type!)
+    # TYPE_I128 "U128" def-type!        # TODO?
+    # TYPE_I256 "U256" def-type!        # TODO?
+    # TYPE_I512 "U512" def-type!        # TODO?
+
+    # TYPE_F32 "F32" def-type!          # TODO.
+    # TYPE_F64 "F64" def-type!          # TODO.
+    # TYPE_F80 "F80" def-type!          # TODO?
+    # TYPE_F128 "F128" def-type!        # TODO?
+
+    # TYPE_M64 "M64" def-type!          # TODO
+    # TYPE_M128 "M128" def-type!        # TODO
+    # TYPE_M256 "M256" def-type!        # TODO
+    # TYPE_M512 "M512" def-type!        # TODO
+
+    #################
+    # BINDING TYPES #
+    #################
+
+    # Names & representations based on the System V ABI for AMD64
+    # These representations aren't portable to x86 or other architectures.
+    # TODO: Make these types primitive & make them portable.
+
+    TYPE_BOOL "C-bool" def-type!
+    TYPE_I8 "C-char" def-type!
+    TYPE_I8 "C-signed-char" def-type!
+    TYPE_U8 "C-unsigned-char" def-type!
+    TYPE_I16 "C-short" def-type!
+    TYPE_I16 "C-signed-short" def-type!
+    TYPE_U16 "C-unsigned-short" def-type!
+    TYPE_I32 "C-int" def-type!
+    TYPE_I32 "C-signed-int" def-type!
+    TYPE_I32 "C-enum" def-type!
+    TYPE_U32 "C-unsigned-int" def-type!
+    TYPE_I64 "C-long" def-type!
+    TYPE_I64 "C-signed-long" def-type!
+    TYPE_I64 "C-long-long" def-type!
+    TYPE_I64 "C-signed-long-long" def-type!
+    TYPE_U64 "C-unsigned-long" def-type!
+    TYPE_U64 "C-unsigned-long-long" def-type!
+    # TYPE_I128 "C-int128" def-type!            # TODO?
+    # TYPE_I128 "C-signed-int128" def-type!     # TODO?
+    #
+    TYPE_PTR "C-void*" def-type!
+    TYPE_PTR "C-char*" def-type!
+    TYPE_PTR "C-const-void*" def-type!
+    TYPE_PTR "C-const-char*" def-type!
+
+
+    )
 
 #########
 # Types #
@@ -169,6 +249,97 @@ def(type-unify-failed!, Gamma Type Type -- Gamma Type +Elab,
     trace-ln!
     TYPE_ERROR
     num-errors++)
+
+def(type-can-have-modality, Modality Type -- Bool,
+    nil rotr type-can-have-modality-aux)
+
+def(type-can-have-modality-aux, List(Type) Modality Type -- Bool,
+    match(
+        TYPE_ERROR -> drop2 true,
+        TYPE_DONT_CARE -> drop2 true,
+        THole -> drop3 true,
+        TMeta -> meta-can-have-modality-aux,
+        TVar -> var-can-have-modality-aux,
+        TPrim -> prim-type-can-have-modality-aux,
+        TData -> data-can-have-modality-aux,
+        TTensor ->
+            dip(over) type-can-have-modality if(
+                type-can-have-modality-aux,
+                drop3 false
+            ),
+        TApp -> rotr dip2(snoc) type-can-have-modality-aux,
+        TMorphism -> drop2 nip MOD_WHY !=,
+        TValue -> value-can-have-modality-aux,
+        TTable -> drop3 true,
+    ))
+
+def(meta-can-have-modality-aux, List(Type) Modality MetaVar -- Bool,
+    meta-is-defined? if(
+        meta-expand type-can-have-modality-aux,
+        meta-modality@ match(
+            NONE -> drop2 true,
+            SOME -> == nip
+        )
+    ))
+
+def(var-can-have-modality-aux, List(Type) Modality Var -- Bool,
+    dip(SOME) var-modality@ == nip)
+
+def(value-can-have-modality-aux, List(Type) Modality Value -- Bool,
+    match(
+        VALUE_STR -> drop3 true,
+        VALUE_INT -> drop MOD_BANG == nip,
+        VALUE_BLOCK -> drop MOD_BANG == nip,
+    ))
+
+def(data-can-have-modality-aux, List(Type) Modality Data -- Bool,
+    swap match(
+        MOD_BANG -> data-can-have-!-modality,
+        MOD_WHY -> data-can-have-?-modality
+    ))
+
+
+||| Safe approximation: Only data for which all type args
+||| and all types in constructor can have the ! modality,
+||| can have the ! modality. This fails some things like
+||| morphism types, but that sounds like a good thing. It
+||| also fails things like phantom type params, but that
+||| sounds kinda reasonable... We'll see I guess.
+def(data-can-have-!-modality, List(Type) Data -- Bool,
+    data-tags-can-have-!-modality if(
+        all(MOD_BANG over type-can-have-modality),
+        drop false
+    ))
+
+field(data-tags-can-have-!-modality-cached, Data, Maybe(Bool))
+def(data-tags-can-have-!-modality, Data -- Bool,
+    data-tags-can-have-!-modality-cached? match(
+        SOME -> dip(drop),
+        NONE ->
+            true SOME over data-tags-can-have-!-modality-cached!
+            data-tags? all(
+                MOD_BANG over
+                tag-type-raw@
+                    # TODO: use elab-type-sig after we fix field(...)
+                    # to not be eager in the types ... for now this
+                    # will cause gross over-approximations
+                type-can-have-modality
+            )
+            tuck SOME swap data-tags-can-have-!-modality-cached!
+    ))
+
+||| Safe approximation: Only data that has an empty
+||| first constructor can have the ? modality. This
+||| includes Maybe and List but not currently Bag,
+||| which is harsh but fair.
+def(data-can-have-?-modality, List(Type) Data -- Bool,
+    nip data-tags@ first match(
+        NONE -> false,
+        SOME -> tag-num-inputs? 0 == nip
+    ))
+
+def(prim-type-can-have-modality-aux, List(Type) Modality PrimType -- Bool,
+    drop3 true)
 
 # Unify two types. Raises an elaboration error if unification is impossible.
 def(type-unify!, Gamma Type Type -- Gamma Type +Elab,
@@ -423,7 +594,7 @@ def(type-trace!, Type -- +IO,
         TYPE_DONT_CARE -> "_" str-trace!,
         TPrim -> type-trace-prim!,
         TVar -> var-name@ name-trace!,
-        TMeta -> "?" str-trace! MetaVar->Int int-trace!,
+        TMeta -> meta-trace!,
         TTensor -> "[" str-trace! TTensor type-trace-stack! "]" str-trace!,
         TMorphism -> "[" str-trace! TMorphism type-trace-sig! "]" str-trace!,
         TData -> data-name@ name-trace!,
@@ -432,6 +603,21 @@ def(type-trace!, Type -- +IO,
         TApp -> app-type-trace!,
         TValue -> value-trace!
     ))
+
+def(meta-trace!, MetaVar -- +IO,
+    meta-name? is-nil? if(
+        drop meta-modality? match(
+            NONE -> "%" str-trace!,
+            SOME -> match(
+                MOD_BANG -> "!" str-trace!,
+                MOD_WHY -> "?" str-trace!
+            )
+        ),
+        name-trace!
+    )
+     "{" str-trace!
+    MetaVar->Int int-trace!
+    "}" str-trace!)
 
 def(value-trace!, Value -- +IO,
     match(
@@ -568,7 +754,13 @@ def(meta-freshen, Subst MetaVar -- Subst Type,
 def(type-var-freshen, Subst Var -- Subst Type,
     swap subst-has-var? if(
         tuck subst-get-var,
-        meta-alloc! TMeta dup
+
+        over var-name?
+        swap var-modality@
+        meta-alloc!
+        tuck meta-modality!
+        tuck meta-name!
+        TMeta dup
         dip(rotr subst-new!)
     ))
 
@@ -629,9 +821,15 @@ def(meta-unify!, Gamma Type MetaVar -- Gamma Type,
     type-has-meta? if(
         swap TMeta type-unify-failed!,
 
+    over meta-modality@ match(
+        NONE -> false,
+        SOME -> over type-can-have-modality not
+    ) if(
+        swap TMeta type-unify-failed!,
+
         swap dip(dup)
         meta-type!
-    ))))
+    )))))
 
 ########
 # Data #
@@ -713,13 +911,13 @@ unSUBST : Subst -- Map(Var, Type)
 unSUBST = match(SUBST -> id)
 
 subst-nil : Subst
-subst-nil = nil
+subst-nil = map-empty SUBST
 
 subst-is-nil : Subst -- Bool
-subst-is-nil = is-nil
+subst-is-nil = unSUBST map-is-empty
 
 subst-is-nil? : Subst -- Subst Bool
-subst-is-nil? = is-nil?
+subst-is-nil? = unSUBST map-is-empty? dip(SUBST)
 
 subst-new! : Type Var Subst -- Subst
 subst-new! = unSUBST rotr pack2 map-insert SUBST

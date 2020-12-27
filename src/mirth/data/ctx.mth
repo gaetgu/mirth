@@ -11,7 +11,7 @@ unCTX : Ctx -- List(Var)
 unCTX = match(CTX -> id)
 
 ctx-empty : Ctx
-ctx-empty = nil
+ctx-empty = L0 CTX
 
 ctx-is-physically-empty : Ctx -- Bool
 ctx-is-physically-empty = ctx-physical-vars is-nil
