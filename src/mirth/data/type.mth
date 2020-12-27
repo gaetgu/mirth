@@ -268,7 +268,7 @@ def(type-can-have-modality-aux, List(Type) Modality Type -- Bool,
                 drop3 false
             ),
         TApp -> rotr dip2(snoc) type-can-have-modality-aux,
-        TMorphism -> drop2 nip MOD_WHY !=,
+        TMorphism -> drop2 nip MOD_WHY neq,
         TValue -> value-can-have-modality-aux,
         TTable -> drop3 true,
     ))
@@ -278,18 +278,18 @@ def(meta-can-have-modality-aux, List(Type) Modality MetaVar -- Bool,
         meta-expand type-can-have-modality-aux,
         meta-modality@ match(
             NONE -> drop2 true,
-            SOME -> == nip
+            SOME -> eq nip
         )
     ))
 
 def(var-can-have-modality-aux, List(Type) Modality Var -- Bool,
-    dip(SOME) var-modality@ == nip)
+    dip(SOME) var-modality@ eq nip)
 
 def(value-can-have-modality-aux, List(Type) Modality Value -- Bool,
     match(
         VALUE_STR -> drop3 true,
-        VALUE_INT -> drop MOD_BANG == nip,
-        VALUE_BLOCK -> drop MOD_BANG == nip,
+        VALUE_INT -> drop MOD_BANG eq nip,
+        VALUE_BLOCK -> drop MOD_BANG eq nip,
     ))
 
 def(data-can-have-modality-aux, List(Type) Modality Data -- Bool,
@@ -450,7 +450,7 @@ value-unify! =
         ),
 
         VALUE_STR -> swap match(
-            VALUE_STR -> dup2 == if(drop VALUE_STR TValue, drop2 TYPE_STR),
+            VALUE_STR -> eq? if(drop VALUE_STR TValue, drop2 TYPE_STR),
             VALUE_INT ->
                 drop2 gamma-token?
                 "Can't unify string value with int value."
@@ -463,7 +463,7 @@ value-unify! =
 
         VALUE_BLOCK -> swap match(
             VALUE_BLOCK ->
-                dup2 == if(
+                eq? if(
                     drop VALUE_BLOCK TValue,
                     block-infer-type!
                     block-unify-type!
@@ -506,22 +506,22 @@ def(type-unify-pair!, Gamma Type Type Type Type -- Gamma Type Type,
     dip(swap dip(type-unify! swap)) type-unify! dip(swap))
 
 def(type-prim-unify!, Gamma PrimType PrimType -- Gamma Type,
-    dup2 == if(
+    eq? if(
         drop TPrim,
         dip(TPrim) TPrim type-unify-failed!
     ))
 def(type-data-unify!, Gamma Data Data -- Gamma Type,
-    dup2 == if(
+    eq? if(
         drop TData,
         dip(TData) TData type-unify-failed!
     ))
 def(type-table-unify!, Gamma Table Table -- Gamma Type,
-    dup2 == if(
+    eq? if(
         drop TTable,
         dip(TTable) TTable type-unify-failed!
     ))
 def(type-var-unify!, Gamma Var Var -- Gamma Type,
-    dup2 == if(
+    eq? if(
         drop TVar,
         dip(TVar) TVar type-unify-failed!
     ))
@@ -536,7 +536,7 @@ def(type-has-meta, MetaVar Type -- Bool,
         TPrim -> drop2 false,
         TVar -> drop2 false,
         THole -> drop2 false,
-        TMeta -> ==,
+        TMeta -> eq,
         TTensor -> dip(type-has-meta? nip) swap if(drop2 true, type-has-meta),
         TMorphism -> dip(type-has-meta? nip) swap if(drop2 true, type-has-meta),
         TApp -> dip(type-has-meta? nip) swap if(drop2 true, type-has-meta),
@@ -561,15 +561,17 @@ def(type-trace-sig!, Type -- +IO,
         _ -> type-trace-stack!
     ))
 
+def(type-is-unit?, Type -- Type Bool, TYPE_UNIT eq? nip)
+
 def(type-trace-stack-dom!, Type -- +IO,
-    type-expand dup TYPE_UNIT == if(
+    type-expand type-is-unit? if(
         drop,
         type-trace-stack!
         " " str-trace!
     ))
 
 def(type-trace-stack-cod!, Type -- +IO,
-    type-expand dup TYPE_UNIT == if(
+    type-expand type-is-unit? if(
         drop,
         " " str-trace!
         type-trace-stack!
@@ -691,8 +693,8 @@ def(type-stack-rest, Type -- Type,
 def(type-sig-needs-fresh-stack-rest?, Type -- Type Bool,
     dup type-expand match(
         TMorphism ->
-            type-stack-rest TYPE_UNIT == if(
-                type-stack-rest TYPE_UNIT ==,
+            type-stack-rest TYPE_UNIT eq if(
+                type-stack-rest TYPE_UNIT eq,
                 drop false
             ),
         _ -> drop false
@@ -812,7 +814,7 @@ def(meta-unify!, Gamma Type MetaVar -- Gamma Type,
     meta-is-defined? if(
         meta-expand type-unify!,
 
-    dup2 TMeta == if(
+    dup2 TMeta eq if(
         drop,
 
     swap

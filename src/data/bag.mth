@@ -140,7 +140,7 @@ bag-has =
 bag-has+ : Bag+(!v) !v -- Bool
 bag-has+ =
     dip(bag-is-singleton+?) swap if(
-        dip(bag-first+) ==,
+        dip(bag-first+) eq,
 
         dip(bag-split-half-right)
         over bag-first+
@@ -176,7 +176,7 @@ bag-insert++ =
 
         dip(bag-split-half-right)
         over bag-first+
-        dup2 >= if(
+        gt? if(
             drop bag-insert++ bag-cat-unsafe_+,
             drop swap dip(bag-insert+) bag-cat-unsafe+
         )
@@ -205,11 +205,11 @@ bag-cat-unsafe+ = dip(unBAG+) unBAG+ cat+ BAG+
 
 ||| Put two stack items in order.
 order2 : v v -- v v
-order2 = <=? if(id, swap)
+order2 = le? if(id, swap)
 
 ||| Put three stack items in order.
 order3 : v v v -- v v v
-order3 = dip(order2) <=? if(id, swap dip(order2))
+order3 = dip(order2) le? if(id, swap dip(order2))
 
 ||| Prerform lookup as an ordered map. Use the key to
 ||| find a corresponding item. Note: If multiple items
@@ -227,7 +227,7 @@ bag-lookup-key =
 bag-lookup-key+ : Bag+([!v !k]) !k -- Maybe(!v)
 bag-lookup-key+ =
     dip(bag-is-singleton+?) swap if(
-        dip(bag-first+ unpack2) == if(SOME, drop NONE),
+        dip(bag-first+ unpack2) eq if(SOME, drop NONE),
 
         dip(bag-split-half-right dup bag-first+ unpack2)
         cmp? match(
@@ -259,25 +259,25 @@ bag-replace-key+ =
 bag-replace-key++ : Bag+([!v !k]) [!v !k] -- Bag+([!v !k])
 bag-replace-key++ =
     dip(bag-is-singleton+?) swap if(
-        dip(bag-first+) dup2 ==key if(
+        dip(bag-first+) key-eq? if(
             nip B1+,
             B2+
         ),
 
         dip(bag-split-half-right dup bag-first+)
-        dup2 <=key if(
+        key-le? if(
             nip bag-replace-key++ bag-cat-unsafe_+,
             nip swap dip(bag-replace-key+) bag-cat-unsafe+
         )
     )
 
 ||| Compare two pairs by their top item (the "key").
-==key : [!v !k] [!v !k] -- Bool
-==key = dip(.0) .0 ==
+key-eq? : [v k] [v k] -- [v k] [v k] Bool
+key-eq? = dip(unpack2) unpack2 dip(swap) eq? dip(dip(swap) pack2 dip(pack2))
 
 ||| Compare two pairs by their top item (the "key").
-<=key : [!v !k] [!v !k] -- Bool
-<=key = dip(.0) .0 <=
+key-le? : [v k] [v k] -- [v k] [v k] Bool
+key-le? = dip(unpack2) unpack2 dip(swap) le? dip(dip(swap) pack2 dip(pack2))
 
 ||| Get underlying list of values from bag.
 bag-values : Bag(v) -- List(v)

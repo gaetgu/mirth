@@ -39,7 +39,11 @@ output-path-root! : Path --
 output-path-root! = OUTPUT_PATH_ROOT path!
 
 path-separator : Str
-path-separator = RUNNING_OS OS_WINDOWS == if("\\", "/")
+path-separator =
+    RUNNING_OS match(
+        OS_WINDOWS -> "\\",
+        _ -> drop "/"
+    )
 
 path-is-empty? : Path -- Path Bool
 path-is-empty? = dup Path->Str str-is-empty

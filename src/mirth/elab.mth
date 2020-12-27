@@ -16,7 +16,7 @@ import(mirth.data.arrow)
 ####################
 
 data(HolesAllowed, ALLOW_HOLES, FORBID_HOLES)
-def(HolesAllowed->Bool, HolesAllowed -- Bool, ALLOW_HOLES ==)
+def(HolesAllowed->Bool, HolesAllowed -- Bool, ALLOW_HOLES eq)
 
 data(TypeElab, TYPE_ELAB -> HolesAllowed Ctx)
 def(type-elab-default, TypeElab, FORBID_HOLES ctx-empty TYPE_ELAB)

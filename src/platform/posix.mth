@@ -249,7 +249,7 @@ heap-reserve! =
         0 # offset
         posix-mmap!
         dup Ptr->Int nonzero if(
-            dup heap-length@ heap-base@ ptr+ == if(
+            dup heap-length@ heap-base@ ptr+ eq if(
                 drop heap-length@ + heap-length!,
                 heap-base! heap-length!
             ),

@@ -21,6 +21,10 @@ data Prim
     PRIM_VALUE_EQ
     PRIM_VALUE_LT
     PRIM_VALUE_LE
+    PRIM_VALUE_EQ?
+    PRIM_VALUE_LT?
+    PRIM_VALUE_LE?
+    PRIM_VALUE_CMP
     PRIM_VALUE_GET
     PRIM_VALUE_SET
 
@@ -112,7 +116,7 @@ field(prim-type, Prim, Type)
 name-prim= : Name Prim -- Bool
 name-prim= =
     swap name-value@ match(
-        DEF_PRIM -> ==,
+        DEF_PRIM -> eq,
         _ -> drop2 false
     )
 
@@ -185,6 +189,10 @@ def(init-prims!, +Names,
     PRIM_VALUE_EQ "prim.value.eq" def-prim!
     PRIM_VALUE_LT "prim.value.lt" def-prim!
     PRIM_VALUE_LE "prim.value.le" def-prim!
+    PRIM_VALUE_EQ? "prim.value.eq?" def-prim!
+    PRIM_VALUE_LT? "prim.value.lt?" def-prim!
+    PRIM_VALUE_LE? "prim.value.le?" def-prim!
+    PRIM_VALUE_CMP "prim.value.cmp" def-prim!
     PRIM_VALUE_CAST "prim.value.cast" def-prim!
     PRIM_VALUE_GET "prim.value.get" def-prim!
     PRIM_VALUE_SET "prim.value.set" def-prim!
@@ -387,13 +395,28 @@ def(init-prims!, +Names,
     dup PRIM_VALUE_EQ prim-ctx!
     dup PRIM_VALUE_LT prim-ctx!
     dup PRIM_VALUE_LE prim-ctx!
+    dup PRIM_VALUE_EQ? prim-ctx!
+    dup PRIM_VALUE_LT? prim-ctx!
+    dup PRIM_VALUE_LE? prim-ctx!
+    dup PRIM_VALUE_CMP prim-ctx!
     drop
 
+    dup
     TVar dup T2 TYPE_BOOL T1 T->
     dup PRIM_VALUE_EQ prim-type!
     dup PRIM_VALUE_LT prim-type!
     dup PRIM_VALUE_LE prim-type!
     drop
+
+    dup
+    TVar dup T2 dup TYPE_BOOL T* T->
+    dup PRIM_VALUE_EQ? prim-type!
+    dup PRIM_VALUE_LT? prim-type!
+    dup PRIM_VALUE_LE? prim-type!
+    drop
+
+    TVar dup T2 dup TYPE_INT T* T->
+    PRIM_VALUE_CMP prim-type!
 
     "a" name-new! var-new-implicit! TYPE_TYPE over var-type!
     "b" name-new! var-new-implicit! TYPE_TYPE over var-type!

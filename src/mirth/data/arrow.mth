@@ -342,7 +342,7 @@ case-is-default-case? : Case -- Case Bool
 case-is-default-case? = dup case-is-default-case
 
 case-is-default-case : Case -- Bool
-case-is-default-case = case-pattern@ PATTERN_UNDERSCORE ==
+case-is-default-case = case-pattern@ PATTERN_UNDERSCORE eq
 
 ###########
 # PATTERN #
@@ -353,7 +353,7 @@ pattern-is-covered : Pattern Pattern -- Bool
 pattern-is-covered =
     match(
         PATTERN_UNDERSCORE -> drop true,
-        _ -> ==
+        _ -> eq
     )
 
 int-false-prime : Int -- Int Bool

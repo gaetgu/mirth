@@ -23,15 +23,13 @@ def(swap, a b -- b a, prim.core.swap)
 def(??, --, prim.core.debug)
 def(run, *a [ *a -- *b ] -- *b, \([f] -> f))
 
-def(==, !a !a -- Bool, prim.value.eq)
-def(<=, !a !a -- Bool, prim.value.le)
-def(<, !a !a -- Bool, prim.value.lt)
-def(==?, a a -- a a Bool, dip(cast) cast dup2 prim.value.eq dip(cast) cast)
-def(<=?, a a -- a a Bool, dip(cast) cast dup2 prim.value.le dip(cast) cast)
-def(<?, a a -- a a Bool, dip(cast) cast dup2 prim.value.lt dip(cast) cast)
-def(eq?, a a -- a a Bool, dip(cast) cast dup2 prim.value.eq dip(cast) cast)
-def(le?, a a -- a a Bool, dip(cast) cast dup2 prim.value.le dip(cast) cast)
-def(lt?, a a -- a a Bool, dip(cast) cast dup2 prim.value.lt dip(cast) cast)
+def(eq, !a !a -- Bool, prim.value.eq)
+def(le, !a !a -- Bool, prim.value.le)
+def(lt, !a !a -- Bool, prim.value.lt)
+def(eq?, a a -- a a Bool, prim.value.eq?)
+def(le?, a a -- a a Bool, prim.value.le?)
+def(lt?, a a -- a a Bool, prim.value.lt?)
+
 def(cast, a -- b, prim.value.cast)
 def(value@, Ptr -- !a, prim.value.get)
 def(value!, !a Ptr --, prim.value.set)
@@ -181,16 +179,11 @@ nip3 = dip(nip2)
 nip4 = dip(nip3)
 nip5 = dip(nip4)
 
-
-
-
 or : *a Bool [*a -- *a Bool] -- *a Bool
 or = \([f] -> if(true, f))
-# or(f) = if(true, f)
 
 and : *a Bool [*a -- *a Bool] -- *a Bool
 and = \([f] -> if(f, false))
-# and(f) = if(f, false)
 
 def-type(Byte, U8)
 def-type(Size, Int)
@@ -246,10 +239,7 @@ I32_MIN : Int
 I32_MIN = -0x80000000
 
 not : Bool -- Bool
-not = false ==
-
-!= : !a !a -- Bool
-!= = == not
+not = false eq
 
 data Comparison
     EQ
@@ -257,23 +247,46 @@ data Comparison
     GT
 end
 
+int-cmp? : Int Int -- Int Int Comparison
+int-cmp? = dup2 int-cmp
+
+int-cmp : Int Int -- Comparison
+int-cmp = eq? if(drop2 EQ, lt if(LT, GT))
+
+cmp? : a a -- a a Comparison
+cmp? = prim.value.cmp 0 int-cmp
+
 cmp : !a !a -- Comparison
 cmp = cmp? dip(drop2)
 
-cmp? : a a -- a a Comparison
-cmp? = eq? if(EQ, lt? if(LT, GT))
+def(==?, Int Int -- Int Int Bool, prim.value.eq?)
+def(<=?, Int Int -- Int Int Bool, prim.value.le?)
+def(<?, Int Int -- Int Int Bool, prim.value.lt?)
+def(>=?, Int Int -- Int Int Bool, swap <=? dip(swap))
+def(>?, Int Int -- Int Int Bool, swap <? dip(swap))
 
-> : !a !a -- Bool
-> = swap <
+def(==, Int Int -- Bool, prim.value.eq)
+def(<=, Int Int -- Bool, prim.value.le)
+def(<, Int Int -- Bool, prim.value.lt)
+def(>=, Int Int -- Bool, swap <=)
+def(>, Int Int -- Bool, swap <)
 
->= : !a !a -- Bool
->= = swap <=
+def(ge?, a a -- a a Bool, swap le? dip(swap))
+def(gt?, a a -- a a Bool, swap lt? dip(swap))
+def(ge, !a !a -- Bool, swap le)
+def(gt, !a !a -- Bool, swap lt)
 
->? : a a -- a a Bool
->? = swap <? dip(swap)
+!= : Int Int -- Bool
+!= = == not
 
->=? : a a -- a a Bool
->=? = swap <=? dip(swap)
+!=? : Int Int -- Int Int Bool
+!=? = ==? not
+
+neq : !a !a -- Bool
+neq = eq not
+
+neq? : a a -- a a Bool
+neq? = eq? not
 
 0= : Int -- Bool
 0= = 0 ==
@@ -451,7 +464,7 @@ is-nil = cast 0 ==
 
 ||| Test for nil.
 is-nil? : ?a -- ?a Bool
-is-nil? = nil ==? dip(cast drop)
+is-nil? = nil eq? dip(cast drop)
 
 ##########
 # TUPLES #

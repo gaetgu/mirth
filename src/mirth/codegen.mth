@@ -841,6 +841,10 @@ def(c99-emit-prims!, +IO,
     PRIM_VALUE_EQ .pm " do { value_t v2 = pop_value(); value_t v1 = pop_value(); push_bool(value_eq(v1, v2)); decref(v1); decref(v2); } while(0)" ;;
     PRIM_VALUE_LT .pm " do { value_t v2 = pop_value(); value_t v1 = pop_value(); push_bool(value_cmp(v1, v2) < 0); decref(v1); decref(v2); } while(0)" ;;
     PRIM_VALUE_LE .pm " do { value_t v2 = pop_value(); value_t v1 = pop_value(); push_bool(value_cmp(v1, v2) <= 0); decref(v1); decref(v2); } while(0)" ;;
+    PRIM_VALUE_EQ? .pm " do { value_t v2 = stack[stack_counter]; value_t v1 = stack[stack_counter+1]; push_bool(value_eq(v1, v2)); } while(0)" ;;
+    PRIM_VALUE_LT? .pm " do { value_t v2 = stack[stack_counter]; value_t v1 = stack[stack_counter+1]; push_bool(value_cmp(v1, v2) < 0); } while(0)" ;;
+    PRIM_VALUE_LE? .pm " do { value_t v2 = stack[stack_counter]; value_t v1 = stack[stack_counter+1]; push_bool(value_cmp(v1, v2) <= 0); } while(0)" ;;
+    PRIM_VALUE_CMP .pm " do { value_t v2 = stack[stack_counter]; value_t v1 = stack[stack_counter+1]; push_i64(value_cmp(v1, v2)); } while(0)" ;;
 
     # PRIM_VALUE_EQ .p " {" ;
     # "    value_t v2 = pop_value();" ;

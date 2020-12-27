@@ -26,4 +26,4 @@ ctx-physical-vars : Ctx -- List(Var)
 ctx-physical-vars = ctx-vars filter(var-is-physical?)
 
 ctx-lookup : Name Ctx -- Maybe(Var)
-ctx-lookup = unCTX reverse-find(dup2 var-name@ ==) nip
+ctx-lookup = unCTX reverse-find(dup2 var-name@ eq) nip
