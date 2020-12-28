@@ -22,7 +22,7 @@
 		"token": {
 			"patterns": [{
 				"name": "token.mirth",
-				"match": "([:\\(\\)\\[\\]\\{\\},]|[^\\s\\\":()\\[\\]\\{\\},]+)",
+				"match": "([:\\(\\)\\[\\]\\{\\},]|<:|[^\\s\\\":()\\[\\]\\{\\},]+)",
 				"captures": {"0": {"patterns": [
 					{"include": "#keyword"},
 					{"include": "#entity"}
@@ -32,10 +32,10 @@
 		"keyword": {
 			"patterns": [{
 				"name": "keyword.control.mirth",
-				"match": "(?<![^\\s\\\":()\\[\\]\\{\\},])(module|import|data|end|def|table|field|buffer|def-type)(?![^\\s\\\":()\\[\\]\\{\\},])"
+				"match": "(?<![^\\s\\\":()\\[\\]\\{\\},])(module|import|data|end|def|table|field|buffer|def-type|sig|rule)(?![^\\s\\\":()\\[\\]\\{\\},])"
 			}, {
 				"name": "keyword.operator.mirth",
-				"match": "(?<![^\\s\\\":()\\[\\]\\{\\},])(\\$|->|--|\\\\|=|_)(?![^\\s\\\":()\\[\\]\\{\\},])"
+				"match": "(?<![^\\s\\\":()\\[\\]\\{\\},])(\\$|->|--|\\\\|=|_|<:|---*)(?![^\\s\\\":()\\[\\]\\{\\},])"
 			}, {
 				"name": "keyword.operator.mirth",
 				"match": "[:\\(\\)\\[\\]\\{\\},]"
@@ -50,7 +50,7 @@
 				"match": "(?<![^\\s\\\":()\\[\\]\\{\\},])([+-]?0[xX][a-zA-Z0-9]+)(?![^\\s\\\":()\\[\\]\\{\\},])"
 			}, {
 				"name": "entity.name.type.mirth",
-				"match": "[\\?!\\+][A-Z][^\\s\\\":()\\[\\]\\{\\},]*"
+				"match": "([\\?!\\+][A-Z][^\\s\\\":()\\[\\]\\{\\},]*|\\|[^\\s\\\":()\\[\\]\\{\\},]+\\|)"
 			}, {
 				"name": "entity.name.function.mirth",
 				"match": "[A-Z][^\\s\\\":()\\[\\]\\{\\},]*"
